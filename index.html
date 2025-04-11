@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hormone Tracker Enhanced</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <div id="notification" class="notification" aria-live="polite"></div>
+
+    <!-- Modals Container -->
+    <div>
+        <!-- Add/Edit Lab Modal -->
+        <div id="add-lab-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="add-lab-modal-title">
+            <div class="modal-content">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="add-lab-modal-title" class="text-lg font-semibold">Add Lab Result</h3>
+                    <button id="close-add-lab-modal" class="text-gray-400 hover:text-gray-600" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="add-lab-form">
+                    <div class="mb-4">
+                        <label for="add-lab-cycle-select" class="block text-sm font-medium text-gray-700 mb-1">Associate with Cycle</label>
+                        <select id="add-lab-cycle-select" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="">-- Select Cycle --</option>
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-lab gap-4 mb-4">
+                        <div>
+                            <label for="add-lab-date" class="block text-sm font-medium text-gray-700 mb-1">Lab Date</label>
+                            <input type="date" id="add-lab-date" required class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3">
+                        </div>
+                        <div>
+                            <label for="add-lab-total-t" class="block text-sm font-medium text-gray-700 mb-1">Total T (ng/dL)</label>
+                            <input type="number" id="add-lab-total-t" step="any" min="0" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3" placeholder="e.g., 750">
+                            <p class="lab-range">Ref: 264-916</p>
+                        </div>
+                        <div>
+                            <label for="add-lab-free-t" class="block text-sm font-medium text-gray-700 mb-1">Free T (pg/mL)</label>
+                            <input type="number" id="add-lab-free-t" step="any" min="0" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3" placeholder="e.g., 20.5">
+                            <p class="lab-range">Ref: 9-30</p>
+                        </div>
+                        <div>
+                            <label for="add-lab-e2" class="block text-sm font-medium text-gray-700 mb-1">Estradiol (pg/mL)</label>
+                            <input type="number" id="add-lab-e2" step="any" min="0" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3" placeholder="e.g., 35">
+                            <p class="lab-range">Ref: 10-40</p>
+                        </div>
+                        <div>
+                            <label for="add-lab-shbg" class="block text-sm font-medium text-gray-700 mb-1">SHBG (nmol/L)</label>
+                            <input type="number" id="add-lab-shbg" step="any" min="0" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3" placeholder="e.g., 30">
+                            <p class="lab-range">Ref: 10-50</p>
+                        </div>
+                        <div>
+                            <label for="add-lab-prolactin" class="block text-sm font-medium text-gray-700 mb-1">Prolactin (ng/mL)</label>
+                            <input type="number" id="add-lab-prolactin" step="any" min="0" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3" placeholder="e.g., 12">
+                            <p class="lab-range">Ref: 2-18</p>
+                        </div>
+                        <div>
+                            <label for="add-lab-hematocrit" class="block text-sm font-medium text-gray-700 mb-1">Hematocrit (%)</label>
+                            <input type="number" id="add-lab-hematocrit" step="any" min="0" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3" placeholder="e.g., 45">
+                            <p class="lab-range">Ref: 38-52</p>
+                        </div>
+                        <div>
+                            <label for="add-lab-cholesterol" class="block text-sm font-medium text-gray-700 mb-1">Cholesterol (mg/dL)</label>
+                            <input type="number" id="add-lab-cholesterol" step="any" min="0" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3" placeholder="e.g., 180">
+                            <p class="lab-range">Ref: &lt;200</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" id="cancel-add-lab" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded transition">
+                            Cancel
+                        </button>
+                        <button type="submit" id="save-add-lab" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded transition">
+                            Save Lab Result
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Dose Modal -->
+        <div id="edit-dose-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-dose-modal-title">
+            <div class="modal-content">
+                 <div class="flex justify-between items-center mb-4">
+                    <h3 id="edit-dose-modal-title" class="text-lg font-semibold">Edit Dose</h3>
+                    <button id="close-edit-dose-modal" class="text-gray-400 hover:text-gray-600" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="edit-dose-form">
+                    <input type="hidden" id="edit-dose-id">
+                    <input type="hidden" id="edit-dose-cycle-id">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                         <div>
+                            <label for="edit-dose-date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input type="date" id="edit-dose-date" required class="shadow-sm focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3">
+                        </div>
+                        <div>
+                            <label for="edit-dose-type" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                            <input type="text" id="edit-dose-type" readonly class="shadow-sm block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 bg-gray-100">
+                        </div>
+                        <div>
+                            <label for="edit-dose-amount" class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                            <input type="number" id="edit-dose-amount" step="any" min="0" class="shadow-sm focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3">
+                        </div>
+                        <div>
+                            <label for="edit-dose-unit" class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                            <input type="text" id="edit-dose-unit" readonly class="shadow-sm block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 bg-gray-100">
+                        </div>
+                    </div>
+                     <div class="flex justify-end space-x-2">
+                        <button type="button" id="cancel-edit-dose" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded transition">
+                            Cancel
+                        </button>
+                        <button type="submit" id="save-edit-dose" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded transition">
+                            Save Dose Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Cycle Name Modal -->
+        <div id="edit-cycle-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-cycle-modal-title">
+            <div class="modal-content">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="edit-cycle-modal-title" class="text-lg font-semibold">Edit Cycle Name</h3>
+                    <button id="close-edit-modal" class="text-gray-400 hover:text-gray-600" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <label for="edit-cycle-name" class="block text-sm font-medium text-gray-700 mb-1">New Cycle Name</label>
+                    <input type="text" id="edit-cycle-name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button id="cancel-edit-cycle" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded transition">
+                        Cancel
+                    </button>
+                    <button id="save-edit-cycle" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Detail Modal -->
+        <div id="history-detail-modal" class="modal p-4" role="dialog" aria-modal="true" aria-labelledby="modal-cycle-name">
+             <div class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-4xl mx-auto max-h-[90vh]">
+                <div class="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10">
+                    <h3 id="modal-cycle-name" class="text-xl font-semibold">Cycle Details</h3>
+                    <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600" aria-label="Close">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 130px);">
+                    <p id="modal-cycle-dates" class="text-sm text-gray-600 mb-6"></p>
+                    <div class="mb-8">
+                        <h4 class="font-semibold mb-2 text-lg">Dose Schedule</h4>
+                        <div class="overflow-x-auto shadow rounded-lg border border-gray-200 max-h-60 overflow-y-auto">
+                            <table class="min-w-full bg-white">
+                                <thead class="bg-gray-50 sticky top-0 z-5">
+                                    <tr>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medication</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dose</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-dose-schedule-body" class="divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="mb-8">
+                        <h4 class="font-semibold mb-2 text-lg">Lab Results</h4>
+                        <div class="overflow-x-auto shadow rounded-lg border border-gray-200 max-h-60 overflow-y-auto">
+                             <table class="min-w-full bg-white">
+                                <thead class="bg-gray-50 sticky top-0 z-5">
+                                    <tr>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total T</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Free T</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E2</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SHBG</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prolactin</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hematocrit</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cholesterol</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-lab-results-body" class="divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="notes-section">
+                        <h4 class="font-semibold mb-2 text-lg">Cycle Notes</h4>
+                        <div id="modal-cycle-notes" class="notes-display">No notes recorded for this cycle.</div>
+                    </div>
+                </div>
+                <div class="border-t p-4 flex justify-end sticky bottom-0 bg-white z-10">
+                    <button id="close-modal-footer-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded transition">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Modals -->
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center flex-wrap gap-4">
+                <div class="flex items-center">
+                    <i class="fas fa-syringe text-blue-500 text-3xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">Hormone Tracker</h1>
+                </div>
+                 <div class="flex gap-2 flex-wrap">
+                     <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                    <button id="import-data-btn" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-sm transition">
+                        <i class="fas fa-upload mr-1"></i> Import Data
+                    </button>
+                    <button id="export-data-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition">
+                        <i class="fas fa-download mr-1"></i> Export Data
+                    </button>
+                    <button id="reset-data-btn" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> Reset Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="bg-white shadow-sm mb-8">
+        <div class="container mx-auto px-4">
+            <div class="flex overflow-x-auto">
+                <div class="nav-item active flex items-center" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                </div>
+                <div class="nav-item flex items-center" data-section="dose-management">
+                    <i class="fas fa-calendar-check mr-2"></i> Dose Management
+                </div>
+                <div class="nav-item flex items-center" data-section="lab-results">
+                    <i class="fas fa-flask-vial mr-2"></i> Lab Results
+                </div>
+                <div class="nav-item flex items-center" data-section="history">
+                    <i class="fas fa-history mr-2"></i> History
+                </div>
+                <div class="nav-item flex items-center" data-section="lab-comparison">
+                    <i class="fas fa-chart-bar mr-2"></i> Lab Comparison
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 pb-20">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <h2 class="text-2xl font-bold mb-6">Dashboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                 <!-- Active Cycle Summary -->
+                 <div class="bg-white p-6 rounded-lg shadow-md md:col-span-2">
+                     <h3 class="text-xl font-semibold mb-4">Active Treatment Cycle</h3>
+                    <div id="active-cycle-dashboard">
+                         <!-- Active Cycle Info Card (shown via JS/CSS) -->
+                         <div class="bg-blue-50 p-4 rounded-md border border-blue-200">
+                            <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+                                <div>
+                                    <h4 id="dashboard-cycle-name" class="text-lg font-semibold text-blue-800"></h4>
+                                    <p id="dashboard-cycle-dates" class="text-sm text-blue-600"></p>
+                                </div>
+                                <span id="dashboard-cycle-status" class="status-badge bg-green-100 text-green-800">Active</span>
+                            </div>
+                            <div class="mb-4">
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">Cycle Progress</span>
+                                    <span id="doses-completed-count" class="text-sm text-gray-500">0/0 doses</span>
+                                </div>
+                                <div class="progress-bar-container w-full">
+                                     <div class="progress-container">
+                                        <div id="dashboard-cycle-progress" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                            <span class="progress-text">0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <div>
+                                    <i class="fas fa-calendar-day mr-1"></i>
+                                    <span id="cycle-end-date">Scheduled End: -</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-clock mr-1"></i>
+                                    <span id="time-remaining">-</span>
+                                </div>
+                            </div>
+                            <button id="view-cycle-details-btn" class="mt-4 text-blue-600 hover:underline text-sm">
+                                View Details & Manage Doses <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                        <!-- Button shown when NO active cycle -->
+                         <button id="start-cycle-btn-dash" class="start-cycle-btn-dash bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm transition">
+                            <i class="fas fa-play mr-1"></i> Start New Treatment Cycle
+                        </button>
+                    </div>
+                </div>
+                <!-- Next Dose Card -->
+                <div class="dashboard-card next-dose-card bg-white p-6 rounded-lg shadow-md">
+                     <div class="flex items-center mb-4">
+                        <i class="fas fa-calendar-day text-red-500 text-xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">Next Dose(s)</h3>
+                    </div>
+                    <div id="next-dose-info"><p class="text-gray-500">Loading...</p></div>
+                </div>
+                <!-- Last Dose Card -->
+                 <div class="dashboard-card last-dose-card bg-white p-6 rounded-lg shadow-md">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-history text-green-500 text-xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">Last Dose Taken</h3>
+                    </div>
+                     <div id="last-dose-info"><p class="text-gray-500">Loading...</p></div>
+                 </div>
+                 <!-- Lab Summary Card -->
+                 <div class="dashboard-card lab-summary-card bg-white p-6 rounded-lg shadow-md md:col-span-2">
+                     <div class="flex items-center mb-4">
+                        <i class="fas fa-chart-line text-purple-500 text-xl mr-3"></i>
+                        <h3 class="text-lg font-semibold">Latest Lab Results Summary</h3>
+                    </div>
+                    <div id="latest-lab-summary"><p class="text-gray-500">No lab results recorded yet.</p></div>
+                    <button id="view-all-labs-btn" class="mt-4 text-blue-600 hover:underline text-sm">
+                        View All Lab Results <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dose Management Section -->
+        <section id="dose-management" class="section">
+            <h2 class="text-2xl font-bold mb-6">Dose Management</h2>
+             <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                 <!-- Cycle Management Header -->
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold">Treatment Cycle Management</h3>
+                    <button id="new-cycle-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm transition">
+                        <i class="fas fa-plus mr-1"></i> New Cycle
+                    </button>
+                </div>
+
+                <div id="no-cycle-message" class="text-gray-500 mb-4">
+                    <p>No active treatment cycle. Start a new cycle to track doses.</p>
+                </div>
+
+                <!-- New Cycle Form -->
+                <div id="cycle-form" class="hidden mb-6 border border-gray-200 p-4 rounded-md">
+                    <h4 class="text-lg font-semibold mb-4">Start New Treatment Cycle</h4>
+                    <div class="grid cycle-form-grid gap-6 mb-4">
+                         <div class="md:col-span-2">
+                             <label for="cycle-name" class="block text-gray-700 text-sm font-bold mb-2">Cycle Name</label>
+                            <input id="cycle-name" type="text" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="e.g., Summer 2024 Cycle">
+                        </div>
+                        <div>
+                            <label for="cycle-start-date" class="block text-gray-700 text-sm font-bold mb-2">Start Date</label>
+                            <input id="cycle-start-date" type="date" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <!-- Testosterone Inputs -->
+                        <div>
+                            <label for="testosterone-dose-amount" class="block text-gray-700 text-sm font-bold mb-2">Testosterone Dose (mg) <span class="text-gray-500 text-xs">(Weekly)</span></label>
+                            <input id="testosterone-dose-amount" type="number" value="125" step="1" min="0" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <div>
+                            <label for="testosterone-duration" class="block text-gray-700 text-sm font-bold mb-2">T Duration (Weeks)</label>
+                            <input id="testosterone-duration" type="number" value="8" step="1" min="1" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                         <!-- HCG Inputs -->
+                         <div>
+                            <label for="hcg-dose-amount" class="block text-gray-700 text-sm font-bold mb-2">HCG Dose (IU)</label>
+                            <input id="hcg-dose-amount" type="number" value="500" step="50" min="0" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                         <div>
+                            <label for="hcg-duration" class="block text-gray-700 text-sm font-bold mb-2">HCG Duration (Weeks)</label>
+                            <input id="hcg-duration" type="number" value="7" step="1" min="0" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="0 for none">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">HCG Frequency <span class="text-gray-500 text-xs">(If HCG dose > 0)</span></label>
+                             <div class="hcg-frequency-selector">
+                                <!-- Radio options -->
+                                <label class="hcg-frequency-option">
+                                    <input type="radio" name="hcg-frequency" value="eod" checked class="mr-2">
+                                    Every Other Day (EOD)
+                                </label>
+                                <label class="hcg-frequency-option">
+                                    <input type="radio" name="hcg-frequency" value="twice" class="mr-2">
+                                    Twice Per Week (Sundays & Thursdays)
+                                </label>
+                                <label class="hcg-frequency-option">
+                                    <input type="radio" name="hcg-frequency" value="thrice" class="mr-2">
+                                    Three Times Per Week (approx. every 2 days)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button id="cancel-cycle-btn" type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded transition">
+                            Cancel
+                        </button>
+                        <button id="save-cycle-btn" type="button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
+                            Start Cycle & Schedule Doses
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-4">
+                        Note: Schedules doses based on the specified durations and frequencies. The cycle's overall end date is based on the longest medication duration.
+                    </p>
+                </div>
+
+                 <!-- Active Cycle Details -->
+                <div id="active-cycle-details" class="hidden">
+                    <!-- Cycle Info Header -->
+                    <div class="bg-blue-50 p-4 rounded-md mb-6 border border-blue-200">
+                         <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+                             <div>
+                                <h4 id="active-cycle-name" class="text-lg font-semibold text-blue-800"></h4>
+                                <p id="active-cycle-dates" class="text-sm text-blue-600"></p>
+                                <p id="active-cycle-durations" class="text-xs text-blue-500 mt-1"></p>
+                            </div>
+                             <div class="flex items-center space-x-2 flex-wrap gap-y-2">
+                                <span id="active-cycle-status" class="status-badge bg-green-100 text-green-800">Active</span>
+                                <button id="edit-cycle-name-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-xs transition whitespace-nowrap">
+                                    <i class="fas fa-edit mr-1"></i> Edit Name
+                                </button>
+                                <button id="complete-cycle-btn" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md text-xs transition whitespace-nowrap">
+                                    <i class="fas fa-check mr-1"></i> Complete Cycle Now
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cycle Progress</label>
+                             <div class="progress-bar-container w-full">
+                                <div class="progress-container">
+                                    <div id="cycle-progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                        <span class="progress-text">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Default Dose Amounts -->
+                    <div class="mt-6 mb-8 border-t pt-4">
+                         <h4 class="text-md font-semibold mb-3">Edit Default Doses for Future Injections</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                            <div>
+                                <label for="edit-testosterone-dose" class="block text-sm font-medium text-gray-700 mb-1">Testosterone (mg)</label>
+                                <input type="number" id="edit-testosterone-dose" step="1" min="0" class="shadow-sm focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3">
+                            </div>
+                            <div>
+                                <label for="edit-hcg-dose" class="block text-sm font-medium text-gray-700 mb-1">HCG (IU)</label>
+                                <input type="number" id="edit-hcg-dose" step="50" min="0" class="shadow-sm focus:ring-orange-500 focus:border-orange-500 block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3">
+                            </div>
+                            <button id="save-dose-changes-btn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm transition h-10 mt-auto">
+                                <i class="fas fa-save mr-1"></i> Update Future Doses
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Note: Updates the default amounts for this cycle and modifies scheduled doses that haven't been completed yet.</p>
+                    </div>
+
+                     <!-- Scheduled Doses Table -->
+                    <div class="mb-8 border-t pt-6">
+                         <h4 class="font-semibold mb-4 text-lg">Scheduled Doses</h4>
+                         <p class="text-sm text-gray-600 mb-4">
+                             Click <i class="fas fa-check-circle text-green-500"></i> / <i class="fas fa-undo text-gray-400"></i> to toggle completion. Click <i class="fas fa-edit text-orange-500"></i> to edit a scheduled dose.
+                         </p>
+                        <div class="overflow-x-auto shadow rounded-lg border border-gray-200">
+                             <table class="min-w-full bg-white">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medication</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dose</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dose-schedule-body" class="divide-y divide-gray-200">
+                                    <!-- Rows populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Current Cycle Lab Results Table -->
+                    <div class="border-t pt-6">
+                        <div class="flex justify-between items-center mb-4">
+                             <h4 class="font-semibold text-lg">Lab Results for this Cycle</h4>
+                             <button id="add-lab-result-current-cycle-btn" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md text-xs transition">
+                                 <i class="fas fa-plus mr-1"></i> Add Lab Result
+                             </button>
+                         </div>
+                        <div id="active-cycle-lab-results-container" class="overflow-x-auto shadow rounded-lg border border-gray-200">
+                             <table class="min-w-full bg-white">
+                                <thead class="bg-gray-50">
+                                     <tr>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total T</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Free T</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E2</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SHBG</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prolactin</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hematocrit</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cholesterol</th>
+                                        <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="active-cycle-lab-results-body" class="divide-y divide-gray-200">
+                                    <!-- Rows populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                     <!-- Cycle Notes -->
+                    <div class="notes-section">
+                        <h4 class="font-semibold mb-4 text-lg">Cycle Notes</h4>
+                        <textarea id="cycle-notes" class="notes-textarea" placeholder="Add notes about this cycle..."></textarea>
+                        <div class="flex justify-end mt-2">
+                            <button id="save-notes-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm transition">
+                                <i class="fas fa-save mr-1"></i> Save Notes
+                            </button>
+                        </div>
+                    </div>
+                </div> <!-- End Active Cycle Details -->
+            </div>
+        </section>
+
+        <!-- Lab Results Section -->
+        <section id="lab-results" class="section">
+            <h2 class="text-2xl font-bold mb-6">All Lab Results</h2>
+             <div class="bg-white p-6 rounded-lg shadow-md">
+                 <div class="flex justify-between items-center mb-4">
+                     <h3 class="text-xl font-semibold">Recorded Lab Results</h3>
+                     <button id="add-lab-result-all-btn" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md text-sm transition">
+                         <i class="fas fa-plus mr-1"></i> Add New Lab Result
+                     </button>
+                 </div>
+                <div id="all-lab-results-container" class="overflow-x-auto shadow rounded-lg border border-gray-200">
+                     <table class="min-w-full bg-white">
+                         <thead class="bg-gray-50">
+                             <tr>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cycle Name</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total T</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Free T</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E2</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SHBG</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prolactin</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hematocrit</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cholesterol</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-lab-results-body" class="divide-y divide-gray-200">
+                            <!-- Rows populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section id="history" class="section">
+             <h2 class="text-2xl font-bold mb-6">Treatment History</h2>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold mb-4">Completed Cycles</h3>
+                <div id="history-list" class="space-y-4">
+                     <p class="text-gray-500">No completed treatment cycles in history.</p>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Lab Comparison Section -->
+        <section id="lab-comparison" class="section">
+            <h2 class="text-2xl font-bold mb-6">Lab Comparison</h2>
+            <div class="comparison-container">
+                <div class="comparison-controls">
+                     <h3 class="text-xl font-semibold mb-4">Compare Cycles</h3>
+                    <div class="mb-6">
+                        <h4 class="font-medium mb-2">Select Cycles to Compare:</h4>
+                        <div id="cycles-list-container" class="cycles-list">
+                            <p class="text-gray-500">No cycles with lab results available.</p>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <h4 class="font-medium mb-2">Select Tests to Compare:</h4>
+                        <div class="tests-selection">
+                            <label class="test-checkbox"><input type="checkbox" name="tests" value="totalT" checked> Total T</label>
+                            <label class="test-checkbox"><input type="checkbox" name="tests" value="freeT" checked> Free T</label>
+                            <label class="test-checkbox"><input type="checkbox" name="tests" value="e2" checked> E2</label>
+                            <label class="test-checkbox"><input type="checkbox" name="tests" value="shbg" checked> SHBG</label>
+                            <label class="test-checkbox"><input type="checkbox" name="tests" value="prolactin" checked> Prolactin</label>
+                            <label class="test-checkbox"><input type="checkbox" name="tests" value="hematocrit" checked> Hematocrit</label>
+                            <label class="test-checkbox"><input type="checkbox" name="tests" value="cholesterol" checked> Cholesterol</label>
+                        </div>
+                    </div>
+                    <button id="generate-comparison-btn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm transition w-full">
+                        <i class="fas fa-chart-bar mr-1"></i> Generate Comparison
+                    </button>
+                </div>
+                 <div class="comparison-charts">
+                    <h3 class="text-xl font-semibold mb-4">Comparison Results</h3>
+                    <div id="comparison-results">
+                         <p class="text-gray-500">Select cycles and tests, then click "Generate Comparison".</p>
+                     </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/relativeTime.js"></script>
+    <!-- *** ADDED MISSING PLUGINS *** -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isSameOrAfter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isBefore.js"></script>
+    <!-- **************************** -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+
+    <!-- Custom Script -->
+    <script src="script.js"></script>
+</body>
+</html>
